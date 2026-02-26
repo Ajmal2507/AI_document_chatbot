@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+
+pip install fastapi uvicorn python-dotenv langchain-groq langchain-community faiss-cpu sentence-transformers pdfminer.six
