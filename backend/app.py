@@ -10,17 +10,14 @@ from langchain.prompts import ChatPromptTemplate
 import tempfile
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
 
-# Use environment variable for API key
+load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY environment variable is required")
 
 app = FastAPI(title="PDF Chatbot API", version="1.0.0")
 
-# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","http://localhost:5173",      # Add this
@@ -29,7 +26,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global variables with better initialization
 vectorstore = None
 retriever = None
 llm = ChatGroq(
@@ -57,32 +53,32 @@ prompt = ChatPromptTemplate.from_template(prompt_template)
 async def upload_pdf(file: UploadFile = File(...)):
     global vectorstore, retriever
     
-    # Validate file type
+   
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
     
     try:
-        # Create temporary file
+        #Temporary file..
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
             contents = await file.read()
             temp_file.write(contents)
             temp_path = temp_file.name
         
-        # Load and process PDF
+        # Processing pdf by loading it
         loader = PDFMinerLoader(temp_path)
         documents = loader.load()
         
         if not documents:
             raise HTTPException(status_code=400, detail="Could not extract text from PDF")
         
-        # Split text
+        # words -> Chunks
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500, 
             chunk_overlap=50
         )
         chunks = text_splitter.split_documents(documents)
         
-        # Create embeddings and vector store
+        # Create embeddings and vector store in FAISS database
         embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
@@ -110,7 +106,7 @@ async def chat(query: str = Form(...)):
         raise HTTPException(status_code=400, detail="Query cannot be empty")
     
     try:
-        # Retrieve relevant documents
+        # Retrieve documents
         relevant_docs = retriever.get_relevant_documents(query)
         context = "\n\n".join([d.page_content for d in relevant_docs])
         
@@ -127,7 +123,7 @@ async def chat(query: str = Form(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating response: {str(e)}")
 
-# Health check endpoint
+# Checking the status
 @app.get("/")
 async def health_check():
     return {"status": "healthy", "service": "PDF Chatbot API"}
