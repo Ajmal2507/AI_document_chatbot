@@ -1,4 +1,13 @@
 fastapi
-uvicorn
-
-pip install fastapi uvicorn python-dotenv langchain-groq langchain-community faiss-cpu sentence-transformers pdfminer.six
+uvicorn[standard]
+python-dotenv
+python-multipart
+langchain
+langchain-groq
+langchain-community
+langchain-text-splitters
+faiss-cpu
+sentence-transformers
+pdfminer.six
+httpx
+python-jose[cryptography]
