@@ -13,8 +13,10 @@ CLERK_JWKS_URL = os.getenv("CLERK_JWKS_URL")
 if not CLERK_JWKS_URL:
     raise ValueError("CLERK_JWKS_URL is missing. Add it to your .env file.")
 
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+
 llm = ChatGroq(
-    model="llama-3.1-8b-instant",
+    model=GROQ_MODEL,
     temperature=0,
     groq_api_key=GROQ_API_KEY,
 )
