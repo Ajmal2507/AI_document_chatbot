@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
-import { UploadCloud, FileText, CheckCircle2, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { UploadCloud, FileText, CheckCircle2, ArrowRight, Loader2, Sparkles, X } from "lucide-react";
 
-export default function UploadSection({ pdfFile, uploading, setPdfFile, uploadPDF }) {
+export default function UploadSection({ pdfFile, uploading, setPdfFile, uploadPDF, status }) {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -31,19 +31,22 @@ export default function UploadSection({ pdfFile, uploading, setPdfFile, uploadPD
   };
 
   return (
-    <section className="saas-card upload-card" aria-label="Upload PDF">
-      <div className="card-header">
-        <div className="header-icon-box">
-          <UploadCloud size={20} className="text-indigo-400" />
+    <section className="panel-card upload-panel" aria-label="Document Ingestion">
+      <div className="panel-header">
+        <div className="panel-header-left">
+          <UploadCloud size={16} className="text-secondary-accent" />
+          <h2 className="panel-title">Document Ingestion</h2>
         </div>
-        <div>
-          <h2 className="card-title">Document Ingestion</h2>
-          <p className="card-desc">Upload a PDF to vectorize and store in local FAISS memory</p>
-        </div>
+        {status?.pdf_loaded && (
+          <span className="pill-badge pill-success">
+            <CheckCircle2 size={12} />
+            Indexed ({status.vectorstore_size} chunks)
+          </span>
+        )}
       </div>
 
       <div
-        className={`dropzone-container ${dragOver ? "dropzone-active" : ""} ${pdfFile ? "dropzone-selected" : ""}`}
+        className={`dropzone-area ${dragOver ? "dropzone-dragover" : ""} ${pdfFile ? "dropzone-has-file" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -59,41 +62,49 @@ export default function UploadSection({ pdfFile, uploading, setPdfFile, uploadPD
         />
 
         {!pdfFile ? (
-          <div className="dropzone-empty">
-            <div className="upload-icon-circle">
-              <UploadCloud size={26} className="upload-cloud-icon" />
+          <div className="dropzone-empty-state">
+            <div className="dropzone-icon-box">
+              <UploadCloud size={22} />
             </div>
-            <p className="dropzone-prompt">
-              <span className="dropzone-cta">Click to browse</span> or drag and drop your PDF here
+            <p className="dropzone-title">
+              <span className="dropzone-action">Click to upload</span> or drag and drop
             </p>
-            <span className="dropzone-hint">Supports multi-page PDF documents up to 25MB</span>
+            <p className="dropzone-subtitle">PDF documents up to 25MB supported</p>
           </div>
         ) : (
-          <div className="dropzone-file-preview">
-            <div className="file-preview-left">
-              <div className="file-icon-box">
-                <FileText size={22} className="text-indigo-400" />
+          <div className="file-preview-card">
+            <div className="file-info-row">
+              <div className="file-icon-square">
+                <FileText size={18} />
               </div>
-              <div className="file-details">
-                <p className="file-name">{pdfFile.name}</p>
-                <div className="file-meta">
-                  <span className="file-size">{formatFileSize(pdfFile.size)}</span>
-                  <span className="file-type-badge">PDF</span>
+              <div className="file-meta-col">
+                <p className="file-name-text">{pdfFile.name}</p>
+                <div className="file-meta-tags">
+                  <span className="file-size-tag">{formatFileSize(pdfFile.size)}</span>
+                  <span className="file-ext-tag">PDF</span>
                 </div>
               </div>
             </div>
 
-            <div className="file-preview-right">
-              <span className="file-status-badge">Ready to ingest</span>
-            </div>
+            <button
+              type="button"
+              className="btn-remove-file"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPdfFile(null);
+              }}
+              title="Remove file"
+            >
+              <X size={14} />
+            </button>
           </div>
         )}
       </div>
 
       {pdfFile && (
-        <div className="upload-action-bar">
+        <div className="upload-actions-row">
           <button
-            className="btn btn-primary btn-ingest"
+            className="btn btn-primary btn-full"
             onClick={(e) => {
               e.stopPropagation();
               uploadPDF();
@@ -102,14 +113,13 @@ export default function UploadSection({ pdfFile, uploading, setPdfFile, uploadPD
           >
             {uploading ? (
               <>
-                <Loader2 size={16} className="spin-animate" />
-                <span>Vectorizing Chunks with FastEmbed…</span>
+                <Loader2 size={15} className="spinner-rotate" />
+                <span>Vectorizing Document Chunks…</span>
               </>
             ) : (
               <>
-                <Sparkles size={16} />
-                <span>Process & Vectorize Document</span>
-                <ArrowRight size={15} />
+                <span>Index Document in Vector Store</span>
+                <ArrowRight size={14} />
               </>
             )}
           </button>

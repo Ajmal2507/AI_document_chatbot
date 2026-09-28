@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { Sparkles, Copy, Check, BookOpen, Layers, ChevronDown, ChevronUp } from "lucide-react";
+import { Sparkles, Copy, Check, BookOpen, Layers, ChevronDown, ChevronUp, User, AlertCircle, Bot } from "lucide-react";
 
-export default function ResultsSection({ answer, context }) {
+function MessageItem({ msg }) {
   const [copied, setCopied] = useState(false);
-  const [contextExpanded, setContextExpanded] = useState(true);
+  const [showCitations, setShowCitations] = useState(false);
 
-  if (!answer) return null;
-
-  const contextChunks = context ? context.split("\n\n").filter(Boolean) : [];
+  const isUser = msg.role === "user";
+  const isError = msg.isError;
+  const contextChunks = msg.context ? msg.context.split("\n\n").filter(Boolean) : [];
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(answer);
+      await navigator.clipboard.writeText(msg.content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -19,90 +19,123 @@ export default function ResultsSection({ answer, context }) {
     }
   };
 
-  return (
-    <div className="results-container" role="region" aria-label="Answer and context">
-      {/* Answer Card */}
-      <div className="saas-card answer-card">
-        <div className="answer-header">
-          <div className="answer-title-group">
-            <div className="header-icon-box answer-icon-box">
-              <Sparkles size={18} className="text-emerald-400" />
-            </div>
-            <div>
-              <h3 className="card-title">Synthesized Answer</h3>
-              <span className="model-tag">Groq LPU Engine · FastEmbed</span>
-            </div>
-          </div>
-
-          <button
-            className={`btn-copy ${copied ? "btn-copied" : ""}`}
-            onClick={handleCopy}
-            title="Copy answer to clipboard"
-            aria-label="Copy answer"
-          >
-            {copied ? (
-              <>
-                <Check size={14} className="text-emerald-400" />
-                <span>Copied</span>
-              </>
-            ) : (
-              <>
-                <Copy size={14} />
-                <span>Copy</span>
-              </>
-            )}
-          </button>
+  if (isUser) {
+    return (
+      <div className="message-row message-user">
+        <div className="message-bubble user-bubble">
+          <p className="message-text">{msg.content}</p>
+          <span className="message-time">{msg.timestamp}</span>
         </div>
-
-        <div className="answer-body">
-          <p className="answer-text">{answer}</p>
+        <div className="avatar-box user-avatar">
+          <User size={15} />
         </div>
       </div>
+    );
+  }
 
-      {/* Context Citations Card */}
-      {contextChunks.length > 0 && (
-        <div className="saas-card context-card">
-          <div
-            className="context-header"
-            onClick={() => setContextExpanded(!contextExpanded)}
-            role="button"
-            tabIndex={0}
-          >
-            <div className="context-title-group">
-              <div className="header-icon-box">
-                <BookOpen size={18} className="text-indigo-400" />
-              </div>
-              <div>
-                <h3 className="card-title">Retrieved Source Context</h3>
-                <p className="card-desc">Grounding passages from FAISS semantic similarity index</p>
-              </div>
+  return (
+    <div className="message-row message-assistant">
+      <div className="avatar-box assistant-avatar">
+        <Bot size={15} />
+      </div>
+
+      <div className="message-bubble-wrapper">
+        <div className={`message-bubble assistant-bubble ${isError ? "error-bubble" : ""}`}>
+          <div className="bubble-header">
+            <div className="bubble-meta">
+              <span className="bubble-author">DocuMind Assistant</span>
+              <span className="bubble-model-badge">Groq LPU · FastEmbed</span>
             </div>
 
-            <div className="context-header-right">
-              <span className="badge-chunks">
-                <Layers size={13} />
-                {contextChunks.length} Chunks
-              </span>
-              <span className="accordion-toggle">
-                {contextExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </span>
-            </div>
+            {!isError && (
+              <button
+                type="button"
+                className={`btn-copy-inline ${copied ? "copied" : ""}`}
+                onClick={handleCopy}
+                title="Copy response"
+              >
+                {copied ? <Check size={13} className="text-success" /> : <Copy size={13} />}
+                <span>{copied ? "Copied" : "Copy"}</span>
+              </button>
+            )}
           </div>
 
-          {contextExpanded && (
-            <div className="context-list">
-              {contextChunks.map((chunk, index) => (
-                <div key={index} className="citation-block">
-                  <div className="citation-header">
-                    <span className="citation-pill">Source Passage #{index + 1}</span>
+          {isError ? (
+            <div className="error-content-row">
+              <AlertCircle size={16} className="text-danger flex-shrink-0" />
+              <p className="message-text error-text">{msg.content}</p>
+            </div>
+          ) : (
+            <p className="message-text">{msg.content}</p>
+          )}
+
+          <div className="bubble-footer">
+            <span className="message-time">{msg.timestamp}</span>
+
+            {contextChunks.length > 0 && (
+              <button
+                type="button"
+                className="btn-toggle-citations"
+                onClick={() => setShowCitations(!showCitations)}
+              >
+                <BookOpen size={12} />
+                <span>{contextChunks.length} Source Citations</span>
+                {showCitations ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Expandable Citations */}
+        {showCitations && contextChunks.length > 0 && (
+          <div className="citations-tray">
+            <div className="citations-tray-header">
+              <Layers size={13} className="text-secondary-accent" />
+              <span>Grounding Passages from FAISS Index</span>
+            </div>
+            <div className="citations-list">
+              {contextChunks.map((chunk, idx) => (
+                <div key={idx} className="citation-card">
+                  <div className="citation-card-header">
+                    <span className="citation-index">Passage #{idx + 1}</span>
                   </div>
-                  <p className="citation-text">{chunk}</p>
+                  <p className="citation-body">{chunk}</p>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function ResultsSection({ messages, answer, context }) {
+  // If messages are present, render full thread
+  if (messages && messages.length > 0) {
+    return (
+      <div className="conversation-thread" role="region" aria-label="Conversation Thread">
+        {messages.map((msg) => (
+          <MessageItem key={msg.id} msg={msg} />
+        ))}
+      </div>
+    );
+  }
+
+  // Fallback single answer if messages not yet populated
+  if (!answer) return null;
+
+  const fallbackMsg = {
+    id: 1,
+    role: "assistant",
+    content: answer,
+    context: context,
+    timestamp: "Just now",
+  };
+
+  return (
+    <div className="conversation-thread" role="region" aria-label="Query Response">
+      <MessageItem msg={fallbackMsg} />
     </div>
   );
 }

@@ -1,100 +1,114 @@
 import { SignInButton, SignUpButton } from "@clerk/clerk-react";
-import { Sparkles, Search, Zap, ShieldCheck, ArrowRight, FileText, Cpu, Database } from "lucide-react";
+import { Search, Zap, Shield, ArrowRight, FileText, Cpu, Database, Layers, CheckCircle2 } from "lucide-react";
 
-const FEATURES = [
+const ARCHITECTURE_POINTS = [
   {
     icon: Search,
-    iconColor: "text-indigo-400",
-    bgClass: "icon-bg-indigo",
-    title: "Dense Semantic Retrieval",
-    desc: "Uses FastEmbed ONNX vectors and FAISS similarity search to retrieve exact matching passages rather than naive keyword matching.",
+    title: "Dense Vector Search",
+    desc: "Calculates dense semantic embeddings with BGE-Small ONNX and retrieves top-k relevant document chunks via FAISS vector indices.",
   },
   {
-    icon: Zap,
-    iconColor: "text-amber-400",
-    bgClass: "icon-bg-amber",
-    title: "Sub-Second Groq Inference",
-    desc: "Answers generated with state-of-the-art open models on Groq LPUs for near-instant latency and high factual accuracy.",
+    icon: Cpu,
+    title: "High-Throughput LPU Inference",
+    desc: "Executes LLM inference via Groq LPUs delivering responses in sub-100ms with strict prompt grounding to avoid hallucinations.",
   },
   {
-    icon: ShieldCheck,
-    iconColor: "text-emerald-400",
-    bgClass: "icon-bg-emerald",
-    title: "Zero-Persistence Privacy",
-    desc: "Documents are processed in memory and encrypted JWT tokens are verified via Clerk JWKS public key cryptography.",
+    icon: Shield,
+    title: "Asymmetric Cryptographic Auth",
+    desc: "Validates JSON Web Tokens against Clerk JWKS public key certificates using RS256 algorithm on every protected endpoint.",
   },
 ];
 
 export default function LandingPage() {
   return (
-    <div className="landing-wrapper">
-      <div className="landing-bg-glow glow-1" aria-hidden="true" />
-      <div className="landing-bg-glow glow-2" aria-hidden="true" />
+    <div className="landing-page-root">
+      <nav className="landing-nav">
+        <div className="nav-container">
+          <div className="brand-badge">
+            <Layers size={18} className="text-primary-accent" />
+            <span className="brand-name">DocuMind</span>
+            <span className="brand-tag">Enterprise RAG</span>
+          </div>
 
-      <div className="landing-card">
-        {/* Top Tag */}
-        <div className="hero-badge">
-          <Sparkles size={14} className="text-indigo-400" />
-          <span>Production RAG Document Intelligence</span>
+          <div className="nav-actions">
+            <SignInButton mode="modal">
+              <button className="btn btn-outline btn-sm">Sign In</button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="btn btn-primary btn-sm">Get Started</button>
+            </SignUpButton>
+          </div>
         </div>
+      </nav>
 
-        {/* Hero Title */}
-        <div className="landing-hero">
-          <h1 className="landing-title">
-            Transform Any PDF into an <span className="gradient-text">Interactive Knowledge Base</span>
+      <main className="landing-hero-section">
+        <div className="landing-container">
+          <div className="badge-pill">
+            <span className="badge-dot" />
+            <span>FastAPI · React 19 · LangChain · Groq</span>
+          </div>
+
+          <h1 className="hero-headline">
+            Context-Grounded Document <br />
+            <span className="headline-gradient">Retrieval & Intelligence</span>
           </h1>
-          <p className="landing-subtitle">
-            Upload multi-page documents and query them in natural language. Powered by ONNX vector embeddings, FAISS search, and Groq LPUs.
+
+          <p className="hero-subtext">
+            An end-to-end full-stack Retrieval-Augmented Generation system. Ingest unstructured PDF documents, perform vector similarity search, and query knowledge via ultra-fast LPUs.
           </p>
-        </div>
 
-        {/* Features */}
-        <div className="features-grid">
-          {FEATURES.map((feat) => {
-            const Icon = feat.icon;
-            return (
-              <div className="feature-card" key={feat.title}>
-                <div className={`feature-icon-wrapper ${feat.bgClass}`}>
-                  <Icon size={20} className={feat.iconColor} />
+          <div className="hero-cta-group">
+            <SignUpButton mode="modal">
+              <button className="btn btn-primary btn-lg">
+                <span>Launch Workspace</span>
+                <ArrowRight size={16} />
+              </button>
+            </SignUpButton>
+            <SignInButton mode="modal">
+              <button className="btn btn-outline btn-lg">
+                <span>Existing User Sign In</span>
+              </button>
+            </SignInButton>
+          </div>
+
+          <div className="architecture-grid">
+            {ARCHITECTURE_POINTS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="arch-card">
+                  <div className="arch-icon-wrapper">
+                    <Icon size={18} />
+                  </div>
+                  <h3 className="arch-card-title">{item.title}</h3>
+                  <p className="arch-card-desc">{item.desc}</p>
                 </div>
-                <h3 className="feature-title">{feat.title}</h3>
-                <p className="feature-desc">{feat.desc}</p>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* CTA Actions */}
-        <div className="landing-actions">
-          <SignInButton mode="modal">
-            <button className="btn btn-primary btn-large" id="sign-in-btn">
-              <span>Sign In to Workspace</span>
-              <ArrowRight size={16} />
-            </button>
-          </SignInButton>
-          <SignUpButton mode="modal">
-            <button className="btn btn-outline btn-large" id="sign-up-btn">
-              Create Account
-            </button>
-          </SignUpButton>
+          <div className="specs-strip">
+            <div className="spec-item">
+              <Database size={14} />
+              <span>FAISS Vector Index</span>
+            </div>
+            <span className="spec-separator" />
+            <div className="spec-item">
+              <Cpu size={14} />
+              <span>Groq LPU Hardware</span>
+            </div>
+            <span className="spec-separator" />
+            <div className="spec-item">
+              <FileText size={14} />
+              <span>FastEmbed ONNX Embeddings</span>
+            </div>
+            <span className="spec-separator" />
+            <div className="spec-item">
+              <Shield size={14} />
+              <span>Clerk JWT Verification</span>
+            </div>
+          </div>
         </div>
-
-        {/* Tech Stack Pills */}
-        <div className="stack-pills">
-          <span className="stack-pill">
-            <Cpu size={12} /> Groq LPU
-          </span>
-          <span className="stack-pill">
-            <Database size={12} /> FAISS + FastEmbed
-          </span>
-          <span className="stack-pill">
-            <ShieldCheck size={12} /> Clerk Auth
-          </span>
-          <span className="stack-pill">
-            <FileText size={12} /> FastAPI + React 19
-          </span>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

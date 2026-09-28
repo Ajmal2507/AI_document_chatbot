@@ -9,6 +9,7 @@ export function useChatbot() {
 
   const [pdfFile, setPdfFile] = useState(null);
   const [query, setQuery] = useState("");
+  const [messages, setMessages] = useState([]);
   const [answer, setAnswer] = useState("");
   const [context, setContext] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,34 +52,69 @@ export function useChatbot() {
       notify("success", res.data.message);
       await checkStatus();
     } catch (error) {
-      const msg = error.response?.data?.detail || "Error uploading PDF. Please try again.";
+      const msg = error.response?.data?.detail || "Failed to process PDF document.";
       notify("error", msg);
     } finally {
       setUploading(false);
     }
   };
 
-  const askQuestion = async () => {
-    if (!query.trim()) return;
+  const askQuestion = async (customQuery) => {
+    const textToAsk = typeof customQuery === "string" ? customQuery : query;
+    if (!textToAsk.trim()) return;
 
+    const currentQuery = textToAsk.trim();
+    setQuery("");
     setLoading(true);
-    setAnswer("");
-    setContext("");
+
+    const userMessage = {
+      id: Date.now(),
+      role: "user",
+      content: currentQuery,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
 
     try {
       const headers = await getAuthHeaders();
       const formData = new FormData();
-      formData.append("query", query);
+      formData.append("query", currentQuery);
 
       const res = await axios.post(`${API_BASE}/chat/`, formData, { headers });
+
+      const assistantMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        content: res.data.answer,
+        context: res.data.context,
+        sourcesCount: res.data.sources_count || 0,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
       setAnswer(res.data.answer);
       setContext(res.data.context);
     } catch (error) {
-      const msg = error.response?.data?.detail || "Error getting answer. Please try again.";
-      setAnswer(`⚠️ ${msg}`);
+      const msg = error.response?.data?.detail || "Failed to generate response from inference engine.";
+      const errorMessage = {
+        id: Date.now() + 1,
+        role: "assistant",
+        isError: true,
+        content: msg,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      setAnswer(msg);
     } finally {
       setLoading(false);
     }
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setAnswer("");
+    setContext("");
   };
 
   const handleKeyDown = (e) => {
@@ -95,6 +131,7 @@ export function useChatbot() {
   return {
     pdfFile,
     query,
+    messages,
     answer,
     context,
     loading,
@@ -105,6 +142,7 @@ export function useChatbot() {
     setQuery,
     uploadPDF,
     askQuestion,
+    clearChat,
     handleKeyDown,
   };
 }

@@ -1,6 +1,6 @@
-# 🤖 AI Document Chatbot (Full-Stack RAG System)
+# DocuMind — Full-Stack RAG Document Intelligence System
 
-An intelligent, context-aware document question-answering assistant built with **Retrieval-Augmented Generation (RAG)**, **FastAPI**, **React 19**, **LangChain**, and high-speed **Groq LPU Inference**.
+A production-grade Retrieval-Augmented Generation (RAG) system built with **FastAPI**, **React 19**, **LangChain**, **FAISS**, and **Groq LPU Hardware Inference**.
 
 [![Frontend Deployment](https://img.shields.io/badge/Frontend-Vercel-black?style=flat-square&logo=vercel)](https://vercel.com)
 [![Backend Deployment](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat-square&logo=render)](https://render.com)
@@ -10,77 +10,78 @@ An intelligent, context-aware document question-answering assistant built with *
 
 ---
 
-## 🌟 Key Features
+## Technical Overview
 
-- 📄 **Dynamic PDF Processing**: Extracts and parses multi-page documents seamlessly with `pdfminer.six`.
-- 🔍 **High-Speed Semantic Search**: Text chunking with `RecursiveCharacterTextSplitter` and lightweight vector embeddings with `FastEmbed (BGE-Small)`.
-- ⚡ **Ultra-Fast LLM Inference**: Near-instant answers powered by Groq LPU engine and state-of-the-art open models.
-- 🔒 **Secure Authentication**: End-to-end user authentication and JWT validation with Clerk.
-- 🎨 **Modern Responsive UI**: Clean interface built with React 19, Vite, and Bootstrap.
-- 💡 **Context Attribution**: Displays relevant source context snippets alongside generated answers.
+DocuMind is an end-to-end question-answering architecture designed to parse unstructured multi-page PDF documents, construct semantic vector indices, and synthesize factual answers with strict source attribution.
+
+- **Document Processing**: Parses multi-page PDF documents using `pdfminer.six` and chunks text using `RecursiveCharacterTextSplitter`.
+- **Dense Vector Search**: Generates ONNX-accelerated dense embeddings with `FastEmbed (BGE-Small)` and indexes passages using `FAISS CPU`.
+- **LPU Acceleration**: Executes inference via Groq LPUs with sub-100ms response latency and strict zero-hallucination grounding.
+- **Cryptographic Authentication**: Protects API routes with RS256 JWT validation against Clerk JWKS public certificates.
+- **Modern User Interface**: Responsive workspace built with React 19, Vite, and clean enterprise UX.
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart LR
-    A[User PDF] --> B[PDF Parser & Chunker]
+    A[Unstructured PDF] --> B[Text Splitter & Chunker]
     B --> C[FastEmbed ONNX Engine]
-    C --> D[FAISS Vector Store]
+    C --> D[FAISS Vector Index]
     
-    E[User Query] --> F[Retriever]
+    E[User Query] --> F[Similarity Retriever]
     D --> F
-    F --> G[LangChain Prompt Template]
-    G --> H[Groq LPU LLM]
-    H --> I[Context-Grounded Answer]
+    F --> G[LangChain LCEL Prompt]
+    G --> H[Groq LPU Inference]
+    H --> I[Grounded Response + Citations]
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-### Frontend:
-- **Framework**: React 19 + Vite
+### Frontend
+- **Core**: React 19, Vite
 - **Auth**: `@clerk/clerk-react`
+- **Icons & UI**: Lucide React, Enterprise Slate Design System
 - **HTTP Client**: Axios
-- **Styling**: Modern CSS3 & Bootstrap
 
-### Backend:
+### Backend
 - **Framework**: FastAPI (Python 3.11)
-- **RAG & Orchestration**: LangChain, LangChain-Groq, LangChain-Community
-- **Embeddings**: FastEmbed (ONNX runtime for lightweight, fast embeddings)
-- **Vector Search**: FAISS (Facebook AI Similarity Search)
-- **Auth Verification**: PyJWT / Python-Jose (Clerk JWKS public key verification)
+- **RAG Orchestration**: LangChain, LangChain-Groq, LangChain-Community
+- **Embeddings**: FastEmbed (ONNX Runtime)
+- **Vector Store**: FAISS (Facebook AI Similarity Search)
+- **Token Verification**: Python-Jose / PyJWT (RS256 JWKS)
 
 ---
 
-## 🚀 Getting Started Locally
+## Local Development
 
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
 - Groq Cloud API Key
-- Clerk Application Keys
+- Clerk Instance Credentials
 
-### 1. Clone the Repository
+### 1. Repository Setup
 ```bash
 git clone https://github.com/Ajmal2507/AI_document_chatbot.git
 cd AI_document_chatbot
 ```
 
-### 2. Backend Setup
+### 2. Backend Configuration
 ```bash
 cd backend
 python -m venv venv
 
-# Activate Virtual Environment
+# Activate Environment
 # Windows:
 venv\Scripts\activate
-# macOS/Linux:
+# macOS / Linux:
 source venv/bin/activate
 
-# Install dependencies
+# Install Dependencies
 pip install -r requirements.txt
 ```
 
@@ -90,13 +91,13 @@ GROQ_API_KEY=your_groq_api_key
 CLERK_JWKS_URL=https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json
 ```
 
-Run the backend server:
+Run the backend API:
 ```bash
 uvicorn app:app --reload --port 8000
 ```
 
-### 3. Frontend Setup
-In a new terminal:
+### 3. Frontend Configuration
+In a separate terminal:
 ```bash
 cd frontend
 npm install

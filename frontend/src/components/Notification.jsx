@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertCircle, X } from "lucide-react";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function Notification({ notification }) {
   if (!notification) return null;
@@ -13,13 +13,13 @@ export default function Notification({ notification }) {
     >
       <div className="toast-icon-wrapper">
         {isSuccess ? (
-          <CheckCircle2 size={18} className="toast-icon" />
+          <CheckCircle2 size={16} className="text-success" />
         ) : (
-          <AlertCircle size={18} className="toast-icon" />
+          <AlertCircle size={16} className="text-danger" />
         )}
       </div>
       <div className="toast-body">
-        <p className="toast-title">{isSuccess ? "Success" : "Error"}</p>
+        <p className="toast-title">{isSuccess ? "System Notification" : "Error Occurred"}</p>
         <p className="toast-message">{notification.text}</p>
       </div>
     </div>

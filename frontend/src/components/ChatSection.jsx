@@ -1,101 +1,101 @@
-import { MessageSquare, Send, CornerDownLeft, Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { MessageSquare, Send, CornerDownLeft, Loader2, Sparkles, RotateCcw } from "lucide-react";
 
 const SUGGESTIONS = [
-  "Summarize the core takeaways in bullet points",
-  "What are the main technical methods or findings?",
-  "Extract key dates, metrics, and quantitative data",
+  "Summarize key findings and conclusions",
+  "Extract quantitative metrics and dates",
+  "List actionable recommendations",
 ];
 
-export default function ChatSection({ query, loading, status, setQuery, askQuestion, handleKeyDown }) {
+export default function ChatSection({
+  query,
+  loading,
+  status,
+  setQuery,
+  askQuestion,
+  handleKeyDown,
+  clearChat,
+  hasMessages,
+}) {
   const pdfReady = status.pdf_loaded;
 
-  const handleSuggestionClick = (text) => {
-    if (!pdfReady || loading) return;
-    setQuery(text);
-  };
-
   return (
-    <section className="saas-card chat-card" aria-label="Ask questions">
-      <div className="card-header">
-        <div className="header-icon-box">
-          <MessageSquare size={20} className="text-violet-400" />
+    <div className="chat-composer-container">
+      {pdfReady && (
+        <div className="suggestions-bar">
+          <div className="suggestions-header">
+            <Sparkles size={12} className="text-secondary-accent" />
+            <span>Suggested Prompts:</span>
+          </div>
+          <div className="suggestions-pills">
+            {SUGGESTIONS.map((text) => (
+              <button
+                key={text}
+                type="button"
+                className="pill-button"
+                onClick={() => askQuestion(text)}
+                disabled={loading}
+              >
+                {text}
+              </button>
+            ))}
+          </div>
         </div>
-        <div>
-          <h2 className="card-title">Document Query Engine</h2>
-          <p className="card-desc">Ask queries grounded in your uploaded document context</p>
-        </div>
-      </div>
+      )}
 
-      <div className="chat-input-wrapper">
-        <div className="query-input-container">
+      <div className="composer-input-row">
+        <div className="composer-input-wrapper">
+          <MessageSquare size={16} className="composer-lead-icon" />
           <input
             id="chat-query-input"
             type="text"
-            className="saas-query-input"
+            className="composer-input"
             placeholder={
               pdfReady
-                ? "Ask a question about the document… (e.g. key takeaways, metrics)"
-                : "Upload and vectorize a PDF above to enable query engine"
+                ? "Ask a question about the document context…"
+                : "Upload and index a PDF document to start querying…"
             }
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={loading || !pdfReady}
-            aria-label="Question input"
+            aria-label="Query input"
             autoComplete="off"
           />
 
-          <div className="input-right-actions">
-            <span className="kbd-shortcut">
-              <CornerDownLeft size={12} />
+          <div className="composer-actions">
+            <span className="kbd-badge">
+              <CornerDownLeft size={11} />
               <span>Enter</span>
             </span>
+
             <button
               id="ask-btn"
-              className="btn btn-primary btn-send"
-              onClick={askQuestion}
+              className="btn btn-primary btn-icon-only"
+              onClick={() => askQuestion()}
               disabled={loading || !query.trim() || !pdfReady}
               aria-busy={loading}
-              title="Send query"
+              title="Submit query"
             >
               {loading ? (
-                <Loader2 size={16} className="spin-animate" />
+                <Loader2 size={15} className="spinner-rotate" />
               ) : (
-                <Send size={15} />
+                <Send size={14} />
               )}
             </button>
           </div>
         </div>
 
-        {pdfReady && (
-          <div className="suggestions-container">
-            <span className="suggestions-label">
-              <Sparkles size={13} className="text-indigo-400" />
-              Suggested queries:
-            </span>
-            <div className="suggestions-list">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className="suggestion-pill"
-                  onClick={() => handleSuggestionClick(s)}
-                  disabled={loading}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {!pdfReady && (
-          <div className="notice-box">
-            <HelpCircle size={16} className="notice-icon" />
-            <p>Upload a document in the ingestion section above to activate semantic search.</p>
-          </div>
+        {hasMessages && (
+          <button
+            type="button"
+            className="btn btn-outline btn-icon-only btn-reset"
+            onClick={clearChat}
+            title="Clear conversation"
+          >
+            <RotateCcw size={15} />
+          </button>
         )}
       </div>
-    </section>
+    </div>
   );
 }
