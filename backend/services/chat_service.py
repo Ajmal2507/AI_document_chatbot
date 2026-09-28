@@ -6,11 +6,11 @@ def generate_answer(query: str, retriever) -> dict:
 
     context = "\n\n".join([doc.page_content for doc in relevant_docs])
 
-    formatted_prompt = prompt.format(context=context, input=query)
-    response = llm.invoke(formatted_prompt)
+    chain = prompt | llm
+    response = chain.invoke({"context": context, "input": query})
 
     return {
-        "answer": response.content,
+        "answer": response.content if hasattr(response, "content") else str(response),
         "context": context,
         "sources_count": len(relevant_docs),
     }
