@@ -2,9 +2,18 @@ import warnings
 from langchain_community.document_loaders import PDFMinerLoader
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+_embeddings = None
+
+
+def get_embeddings() -> FastEmbedEmbeddings:
+    global _embeddings
+    if _embeddings is None:
+        _embeddings = FastEmbedEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+    return _embeddings
 
 
 def process_pdf(file_path: str) -> tuple[FAISS, int]:
@@ -20,10 +29,7 @@ def process_pdf(file_path: str) -> tuple[FAISS, int]:
     )
     chunks = text_splitter.split_documents(documents)
 
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-
+    embeddings = get_embeddings()
     vectorstore = FAISS.from_documents(chunks, embeddings)
 
     return vectorstore, len(chunks)
